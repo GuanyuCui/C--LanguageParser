@@ -1,7 +1,7 @@
 # C--LanguageParser
  The C-- language parser.
 
-# 内容
+## 内容
 LR(1)-codes 目录内是第三次实验（自下而上的语法分析）的所有内容，主要有下列文件:
 
 - 1. util.h
@@ -29,7 +29,7 @@ C-- 语言测试源文件。
 - 12. parser
 macOS 下编译得到的可执行文件，Windows 下可按照下面的命令自行编译运行。
 
-# 【附录】
+## 【附录】
 - A. 编译方法:
 运行下面的命令进行编译
 g++ -O3 -std=c++17 util.cpp lexer.cpp parser.cpp -o parser
