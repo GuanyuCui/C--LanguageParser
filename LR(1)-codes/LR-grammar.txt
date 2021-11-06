@@ -1,0 +1,642 @@
+// -------------------- 外部定义 --------------------
+// A.2.4 External definitions
+// (6.9)
+// translation-unit:
+//      external-declaration
+//      translation-unit external-declaration
+<trans-unit> -> <ext-decl>
+<trans-unit> -> <trans-unit> <ext-decl> 
+
+// (6.9)
+// external-declaration:
+//      function-definition
+//      declaration
+<ext-decl> -> <func-def>
+<ext-decl> -> <decl>
+
+// (6.9.1)
+// function-definition:
+//      declaration-specifiers declarator declaration-list_opt compound-statement
+<func-def> -> <decl-spec> <declarator> <decl-list> <comp-stmt>
+<func-def> -> <decl-spec> <declarator> <comp-stmt>
+
+// (6.9.1)
+// declaration-list:
+//      declaration
+//      declaration-list declaration
+<decl-list> -> <decl>
+<decl-list> -> <decl-list> <decl>
+
+// -------------------- 语句 --------------------
+// A.2.3 Statements
+
+// (6.8)
+// statement:
+//      labeled-statement
+//      compound-statement
+//      expression-statement
+//      selection-statement
+//      iteration-statement
+//      jump-statement
+<stmt> -> <labeled-stmt>
+<stmt> -> <comp-stmt>
+<stmt> -> <expr-stmt>
+<stmt> -> <sele-stmt>
+<stmt> -> <iter-stmt>
+<stmt> -> <jump-stmt>
+
+// (6.8.1)
+// labeled-statement:
+//      identifier : statement
+//      case constant-expression : statement
+//      default : statement
+<labeled-stmt> -> IDENTIFIER DELIM_COLON <stmt>
+<labeled-stmt> -> case <const-expr> DELIM_COLON <stmt>
+<labeled-stmt> -> default DELIM_COLON <stmt>
+
+// (6.8.2)
+// compound-statement:
+//      { block-item-list_opt }
+<comp-stmt> -> DELIM_LCURBRACE <blk-item-list> DELIM_RCURBRACE
+<comp-stmt> -> DELIM_LCURBRACE DELIM_RCURBRACE
+
+// (6.8.2)
+// block-item-list:
+//      block-item
+//      block-item-list block-item
+<blk-item-list> -> <blk-item>
+<blk-item-list> -> <blk-item-list> <blk-item>
+
+// (6.8.2)
+// block-item:
+//      declaration
+//      statement
+<blk-item> -> <decl>
+<blk-item> -> <stmt>
+
+// (6.8.3)
+// expression-statement:
+//      expression_opt ;
+<expr-stmt> -> <expr> DELIM_SEMICOLON
+<expr-stmt> -> DELIM_SEMICOLON
+
+// (6.8.4)
+// selection-statement:
+//      if ( expression ) statement
+//      if ( expression ) statement else statement
+//      switch ( expression ) statement
+// 此处有冲突，但可以手工解决
+<sele-stmt> -> if DELIM_LPAR <expr> DELIM_RPAR <stmt>
+<sele-stmt> -> if DELIM_LPAR <expr> DELIM_RPAR <stmt> else <stmt>
+<sele-stmt> -> switch DELIM_LPAR <expr> DELIM_RPAR <stmt>
+
+// (6.8.5)
+// iteration-statement:
+//      while ( expression ) statement
+//      do statement while ( expression ) ;
+//      for ( expression_opt ; expression_opt ; expression_opt ) statement
+//      for ( declaration expression_opt ; expression_opt ) statement
+<iter-stmt> -> while DELIM_LPAR <expr> DELIM_RPAR <stmt>
+<iter-stmt> -> do <stmt> while DELIM_LPAR <expr> DELIM_RPAR DELIM_SEMICOLON
+<iter-stmt> -> for DELIM_LPAR <for-cond> DELIM_RPAR <stmt>
+<for-cond> -> <expr> DELIM_SEMICOLON <expr> DELIM_SEMICOLON <expr>
+<for-cond> -> DELIM_SEMICOLON <expr> DELIM_SEMICOLON <expr>
+<for-cond> -> <expr> DELIM_SEMICOLON DELIM_SEMICOLON <expr>
+<for-cond> -> <expr> DELIM_SEMICOLON <expr> DELIM_SEMICOLON
+<for-cond> -> DELIM_SEMICOLON DELIM_SEMICOLON <expr>
+<for-cond> -> DELIM_SEMICOLON <expr> DELIM_SEMICOLON
+<for-cond> -> <expr> DELIM_SEMICOLON DELIM_SEMICOLON
+<for-cond> -> DELIM_SEMICOLON DELIM_SEMICOLON
+<for-cond> -> <decl> <expr> DELIM_SEMICOLON <expr>
+<for-cond> -> <decl> DELIM_SEMICOLON <expr>
+<for-cond> -> <decl> <expr> DELIM_SEMICOLON
+<for-cond> -> <decl> DELIM_SEMICOLON
+
+// (6.8.6)
+// jump-statement:
+//      goto identifier ;
+//      continue ;
+//      break ;
+//      return expression_opt ;
+<jump-stmt> -> goto DELIM_SEMICOLON
+<jump-stmt> -> continue DELIM_SEMICOLON
+<jump-stmt> -> break DELIM_SEMICOLON
+<jump-stmt> -> return <expr> DELIM_SEMICOLON
+<jump-stmt> -> return DELIM_SEMICOLON
+
+// // -------------------- 声明 --------------------
+// A.2.2 Declarations
+
+// (6.7)
+// declaration:
+//      declaration-specifiers init-declarator-list_opt ;
+//      static_assert-declaration (不用)
+<decl> -> <decl-spec> <init-declarator-list> DELIM_SEMICOLON
+<decl> -> <decl-spec> DELIM_SEMICOLON
+
+// (6.7)
+// declaration-specifiers:
+//      storage-class-specifier declaration-specifiers_opt
+//      type-specifier declaration-specifiers_opt
+//      type-qualifier declaration-specifiers_opt
+//      function-specifier declaration-specifiers_opt (不用)
+//      alignment-specifier declaration-specifiers_opt (不用)
+<decl-spec> -> <storage-class-spec> <decl-spec>
+<decl-spec> -> <storage-class-spec>
+<decl-spec> -> <type-spec> <decl-spec>
+<decl-spec> -> <type-spec>
+<decl-spec> -> <type-qual> <decl-spec>
+<decl-spec> -> <type-qual>
+
+// (6.7)
+// init-declarator-list:
+//      init-declarator
+//      init-declarator-list , init-declarator
+<init-declarator-list> -> <init-declarator>
+<init-declarator-list> -> <init-declarator-list> DELIM_COMMA <init-declarator>
+
+// (6.7)
+// init-declarator:
+//      declarator
+//      declarator = initializer
+<init-declarator> -> <declarator>
+<init-declarator> -> <declarator> OP_ASN <initializer>
+
+// (6.7.1)
+// storage-class-specifier: 
+//      typedef
+//      extern (不用)
+//      static (不用)
+//      _Thread_local (不用)
+//      auto (不用)
+//      register (不用)
+<storage-class-spec> -> typedef
+
+// (6.7.2)
+// type-specifier:
+//      void
+//      char
+//      short
+//      int
+//      long
+//      float
+//      double
+//      signed
+//      unsigned
+//      _Bool (不用)
+//      _Complex (不用)
+//      atomic-type-specifier (不用)
+//      struct-or-union-specifier
+//      enum-specifier
+//      typedef-name (冲突，不用)
+<type-spec> -> void
+<type-spec> -> char
+<type-spec> -> short
+<type-spec> -> int
+<type-spec> -> long
+<type-spec> -> float
+<type-spec> -> double
+<type-spec> -> signed
+<type-spec> -> unsigned
+<type-spec> -> <struct-union-spec>
+<type-spec> -> <enum-spec>
+// <type-spec> -> <typedef-name>
+
+// (6.7.2.1)
+// struct-or-union-specifier:
+//      struct-or-union identifier_opt { struct-declaration-list }
+//      struct-or-union identifier
+<struct-union-spec> -> <struct-union> IDENTIFIER DELIM_LCURBRACE <struct-decl-list> DELIM_RCURBRACE
+<struct-union-spec> -> <struct-union> DELIM_LCURBRACE <struct-decl-list> DELIM_RCURBRACE
+<struct-union-spec> -> <struct-union> IDENTIFIER
+
+// (6.7.2.1)
+// struct-or-union: 
+//      struct
+//      union (不用)
+<struct-union> -> struct
+
+// (6.7.2.1) 
+// struct-declaration-list: 
+//      struct-declaration
+//      struct-declaration-list struct-declaration
+<struct-decl-list> -> <struct-decl>
+<struct-decl-list> -> <struct-decl-list> <struct-decl>
+
+// (6.7.2.1) 
+// struct-declaration:
+//      specifier-qualifier-list struct-declarator-list_opt ;
+//      static_assert-declaration (不用)
+<struct-decl> -> <spec-qual-list> <struct-declarator-list> DELIM_SEMICOLON
+<struct-decl> -> <spec-qual-list> DELIM_SEMICOLON
+
+// (6.7.2.1) 
+// specifier-qualifier-list:
+//      type-specifier specifier-qualifier-list_opt
+//      type-qualifier specifier-qualifier-list_opt
+<spec-qual-list> -> <type-spec> <spec-qual-list>
+<spec-qual-list> -> <type-spec>
+<spec-qual-list> -> <type-qual> <spec-qual-list>
+<spec-qual-list> -> <type-qual>
+
+// (6.7.2.1)
+// struct-declarator-list: 
+//      struct-declarator
+//      struct-declarator-list , struct-declarator
+<struct-declarator-list> -> <struct-declarator>
+<struct-declarator-list> -> <struct-declarator-list> DELIM_COMMA <struct-declarator>
+
+// (6.7.2.1) 
+// struct-declarator: 
+//      declarator
+//      declarator_opt : constant-expression (不用)
+<struct-declarator> -> <declarator>
+
+// (6.7.2.2)
+// enum-specifier:
+//      enum identifier_opt { enumerator-list }
+//      enum identifier_opt { enumerator-list , }
+//      enum identifier
+<enum-spec> -> enum IDENTIFIER DELIM_LCURBRACE <enumerator-list> DELIM_RCURBRACE
+<enum-spec> -> enum DELIM_LCURBRACE <enumerator-list> DELIM_RCURBRACE
+<enum-spec> -> enum IDENTIFIER DELIM_LCURBRACE <enumerator-list> DELIM_COMMA DELIM_RCURBRACE
+<enum-spec> -> enum DELIM_LCURBRACE <enumerator-list> DELIM_COMMA DELIM_RCURBRACE
+<enum-spec> -> enum IDENTIFIER
+
+// (6.7.2.2) 
+// enumerator-list: 
+//      enumerator
+//      enumerator-list , enumerator
+<enumerator-list> -> <enumerator>
+<enumerator-list> -> <enumerator-list> DELIM_COMMA <enumerator>
+
+// (6.7.2.2) 
+// enumerator: 
+//      enumeration-constant
+//      enumeration-constant = constant-expression
+<enumerator> -> <enumeration-const>
+<enumerator> -> <enumeration-const> OP_ASN <const-expr>
+<enumeration-const> -> IDENTIFIER
+
+
+// (6.7.2.4) (不用)
+
+// (6.7.3)
+// type-qualifier:
+//      const
+//      restrict (不用)
+//      volatile (不用)
+//      _Atomic (不用)
+<type-qual> -> const
+
+// (6.7.4) - (6.7.5) (不用)
+
+// (6.7.6)
+// declarator:
+//      pointer_opt direct-declarator
+<declarator> -> <pointer> <direct-declarator>
+<declarator> -> <direct-declarator>
+
+// (6.7.6)
+// direct-declarator:
+//      identifier
+//      ( declarator )
+//      direct-declarator [ type-qualifier-list_opt assignment-expression_opt ]
+//      direct-declarator [ static type-qualifier-list_opt assignment-expression ] (不用)
+//      direct-declarator [ type-qualifier-list static assignment-expression ] (不用)
+//      direct-declarator [ type-qualifier-list_opt * ] (不用)
+//      direct-declarator ( parameter-type-list )
+//      direct-declarator ( identifier-list_opt )
+<direct-declarator> -> IDENTIFIER
+<direct-declarator> -> DELIM_LPAR <declarator> DELIM_RPAR
+<direct-declarator> -> <direct-declarator> DELIM_LSQBRACKET <type-qual-list> <asn-expr> DELIM_RSQBRACKET
+<direct-declarator> -> <direct-declarator> DELIM_LSQBRACKET <type-qual-list> DELIM_RSQBRACKET
+<direct-declarator> -> <direct-declarator> DELIM_LSQBRACKET <asn-expr> DELIM_RSQBRACKET
+<direct-declarator> -> <direct-declarator> DELIM_LSQBRACKET DELIM_RSQBRACKET
+<direct-declarator> -> <direct-declarator> DELIM_LPAR <param-type-list> DELIM_RPAR
+<direct-declarator> -> <direct-declarator> DELIM_LPAR <identifier-list> DELIM_RPAR
+<direct-declarator> -> <direct-declarator> DELIM_LPAR DELIM_RPAR
+
+// (6.7.6)
+// pointer:
+//      * type-qualifier-list_opt
+//      * type-qualifier-list_opt pointer
+<pointer> -> OP_MUL <type-qual-list>
+<pointer> -> OP_MUL
+<pointer> -> OP_MUL <type-qual-list> <pointer>
+<pointer> -> OP_MUL <pointer>
+
+// (6.7.6)
+// type-qualifier-list:
+//      type-qualifier
+//      type-qualifier-list type-qualifier
+<type-qual-list> -> <type-qual>
+<type-qual-list> -> <type-qual-list> <type-qual>
+
+// (6.7.6)
+// parameter-type-list:
+//      parameter-list
+//      parameter-list , ... (不用)
+<param-type-list> -> <param-list>
+
+// (6.7.6)
+// parameter-list:
+//      parameter-declaration
+//      parameter-list , parameter-declaration
+<param-list> -> <param-decl>
+<param-list> -> <param-list> DELIM_COMMA <param-decl>
+
+// (6.7.6)
+// parameter-declaration:
+//      declaration-specifiers declarator
+//      declaration-specifiers abstract-declarator_opt
+<param-decl> -> <decl-spec> <declarator>
+<param-decl> -> <decl-spec> <abstract-declarator>
+<param-decl> -> <decl-spec>
+
+// (6.7.6)
+// identifier-list:
+//      identifier
+//      identifier-list , identifier
+<identifier-list> -> IDENTIFIER
+<identifier-list> -> <identifier-list> DELIM_COMMA IDENTIFIER
+
+// (6.7.7) 
+// type-name:
+//      specifier-qualifier-list abstract-declarator_opt
+<type-name> -> <spec-qual-list> <abstract-declarator>
+<type-name> -> <spec-qual-list>
+
+// (6.7.7) 
+// abstract-declarator: 
+//      pointer
+//      pointer_opt direct-abstract-declarator
+<abstract-declarator> -> <pointer>
+<abstract-declarator> -> <pointer> <direct-abstract-declarator>
+<abstract-declarator> -> <direct-abstract-declarator>
+
+// (6.7.7) 
+// direct-abstract-declarator:
+//      ( abstract-declarator )
+//      direct-abstract-declarator_opt [ type-qualifier-list_opt assignment-expression_opt ]
+//      direct-abstract-declarator_opt [ static type-qualifier-list_opt assignment-expression ] (不用)
+//      direct-abstract-declarator_opt [ type-qualifier-list static assignment-expression ] (不用)
+//      direct-abstract-declarator_opt [ * ] direct-abstract-declarator_opt ( parameter-type-list_opt ) (不用)
+<direct-abstract-declarator> -> DELIM_LPAR <abstract-declarator> DELIM_RPAR
+<direct-abstract-declarator> -> DELIM_LSQBRACKET <type-qual-list> <asn-expr> DELIM_RSQBRACKET
+<direct-abstract-declarator> -> DELIM_LSQBRACKET <type-qual-list> DELIM_RSQBRACKET
+<direct-abstract-declarator> -> DELIM_LSQBRACKET <asn-expr> DELIM_RSQBRACKET
+<direct-abstract-declarator> -> DELIM_LSQBRACKET DELIM_RSQBRACKET
+
+// (6.7.8) 
+// typedef-name: (冲突，不用)
+//      identifier
+// <typedef-name> -> IDENTIFIER
+
+// (6.7.9)
+// initializer:
+//      assignment-expression
+//      { initializer-list }
+//      { initializer-list , }
+<initializer> -> <asn-expr>
+<initializer> -> DELIM_LCURBRACE <initializer-list> DELIM_RCURBRACE
+<initializer> -> DELIM_LCURBRACE <initializer-list> DELIM_COMMA DELIM_RCURBRACE
+
+// (6.7.9)
+// initializer-list
+//      designation_opt initializer
+//      initializer-list , designation_opt initializer
+<initializer-list> -> <designation> <initializer>
+<initializer-list> -> <initializer>
+<initializer-list> -> <initializer-list> DELIM_COMMA <designation> <initializer>
+<initializer-list> -> <initializer-list> DELIM_COMMA <initializer>
+
+// (6.7.9)
+// designation:
+//      designator-list =
+<designation> -> <designator-list> OP_ASN 
+
+// (6.7.9)
+// designator-list:
+//      designator
+//      designator-list designator
+<designator-list> -> <designator>
+<designator-list> -> <designator-list> <designator>
+
+// (6.7.9)
+// designator:
+//      [ constant-expression ]
+//      . identifier
+<designator> -> DELIM_LSQBRACKET <const-expr> DELIM_RSQBRACKET
+<designator> -> OP_DOT IDENTIFIER
+
+// (6.7.10) (不用)
+
+// -------------------- 表达式 --------------------
+// A.2.1 Expressions
+// (6.5.17)
+// expression:
+//		assignment-expression
+//		expression , assignment-expression
+<expr> -> <asn-expr>
+<expr> -> <expr> DELIM_COMMA <asn-expr>
+
+// (6.5.16)
+// assignment-expression:
+//		conditional-expression
+//		unary-expression assignment-operator assignment-expression
+<asn-expr> -> <cond-expr>
+<asn-expr> -> <unary-expr> <asn-op> <asn-expr>
+
+// (6.5.16)
+// assignment-operator:
+//      = *= /= %= += -= <<= >>= &= ^= |=
+<asn-op> -> OP_ASN
+<asn-op> -> OP_MULASN
+<asn-op> -> OP_DIVASN
+<asn-op> -> OP_MODASN
+<asn-op> -> OP_ADDASN
+<asn-op> -> OP_SUBASN
+<asn-op> -> OP_SHLASN
+<asn-op> -> OP_SHRASN
+<asn-op> -> OP_ANDASN
+<asn-op> -> OP_XORASN
+<asn-op> -> OP_ORASN
+
+// (6.6)
+// constant-expression:
+//      conditional-expression
+<const-expr> -> <cond-expr>
+
+// (6.5.15)
+// conditional-expression:
+//		logical-OR-expression
+//		logical-OR-expression ? expression : conditional-expression
+<cond-expr> -> <lor-expr>
+<cond-expr> -> <lor-expr> DELIM_QUESTION <expr> DELIM_COLON <cond-expr>
+
+// (6.5.14)
+// logical-OR-expression:
+//		logical-AND-expression
+//		logical-OR-expression || logical-AND-expression
+<lor-expr> -> <land-expr>
+<lor-expr> -> <lor-expr> OP_LOR <land-expr>
+
+// (6.5.13)
+// logical-AND-expression:
+//		inclusive-OR-expression
+//		logical-AND-expression && inclusive-OR-expression
+<land-expr> -> <inc-or-expr>
+<land-expr> -> <land-expr> OP_LAND <inc-or-expr>
+
+// (6.5.12)
+// inclusive-OR-expression:
+//		exclusive-OR-expression
+//		inclusive-OR-expression | exclusive-OR-expression
+<inc-or-expr> -> <exc-or-expr>
+<inc-or-expr> -> <inc-or-expr> OP_OR <exc-or-expr>
+
+// (6.5.11)
+// exclusive-OR-expression:
+//		AND-expression
+//		exclusive-OR-expression ^ AND-expression
+<exc-or-expr> -> <and-expr>
+<exc-or-expr> -> <exc-or-expr> OP_XOR <and-expr>
+
+// (6.5.10)
+// AND-expression:
+//		equality-expression
+//		AND-expression & equality-expression
+<and-expr> -> <eq-expr>
+<and-expr> -> <and-expr> OP_AND <eq-expr>
+
+// (6.5.9)
+// equality-expression:
+//		relational-expression
+//		equality-expression == relational-expression
+//		equality-expression != relational-expression
+<eq-expr> -> <rel-expr>
+<eq-expr> -> <eq-expr> OP_EQ <rel-expr>
+<eq-expr> -> <eq-expr> OP_NEQ <rel-expr>
+
+// (6.5.8)
+// relational-expression:
+//		shift-expression
+//		relational-expression < shift-expression
+//		relational-expression > shift-expression
+//		relational-expression <= shift-expression
+//		relational-expression >= shift-expression
+<rel-expr> -> <shift-expr>
+<rel-expr> -> <rel-expr> OP_LT <shift-expr>
+<rel-expr> -> <rel-expr> OP_GT <shift-expr>
+<rel-expr> -> <rel-expr> OP_LE <shift-expr>
+<rel-expr> -> <rel-expr> OP_GE <shift-expr>
+
+// (6.5.7)
+// shift-expression:
+//		additive-expression
+//		shift-expression << additive-expression
+//		shift-expression >> additive-expression
+<shift-expr> -> <additive-expr>
+<shift-expr> -> <shift-expr> OP_SHL <additive-expr>
+<shift-expr> -> <shift-expr> OP_SHR <additive-expr>
+
+// (6.5.6)
+// additive-expression:
+//		multiplicative-expression
+//		additive-expression + multiplicative-expression
+//		additive-expression - multiplicative-expression
+<additive-expr> -> <multiplicative-expr>
+<additive-expr> -> <additive-expr> OP_ADD <multiplicative-expr>
+<additive-expr> -> <additive-expr> OP_SUB <multiplicative-expr>
+
+// (6.5.5)
+// multiplicative-expression:
+//		cast-expression
+//		multiplicative-expression * cast-expression
+//		multiplicative-expression / cast-expression
+//		multiplicative-expression % cast-expression
+<multiplicative-expr> -> <cast-expr>
+<multiplicative-expr> -> <multiplicative-expr> OP_MUL <cast-expr>
+<multiplicative-expr> -> <multiplicative-expr> OP_DIV <cast-expr>
+<multiplicative-expr> -> <multiplicative-expr> OP_MOD <cast-expr>
+
+// (6.5.4)
+// cast-expression:
+//      unary-expression
+//      ( type-name ) cast-expression
+<cast-expr> -> <unary-expr>
+<cast-expr> -> DELIM_LPAR <type-name> DELIM_RPAR <cast-expr>
+
+// (6.5.3)
+// unary-expression:
+//		postfix-expression
+//		++ unary-expression
+//		-- unary-expression
+//		unary-operator cast-expression
+//		sizeof unary-expression
+//		sizeof ( type-name )
+//      _Alignof ( type-name ) (不用)
+<unary-expr> -> <postfix-expr>
+<unary-expr> -> OP_INC <unary-expr>
+<unary-expr> -> OP_DEC <unary-expr>
+<unary-expr> -> <unary-op> <cast-expr>
+<unary-expr> -> sizeof <unary-expr>
+<unary-expr> -> sizeof DELIM_LPAR <type-name> DELIM_RPAR
+
+// (6.5.3) 
+// unary-operator:
+//      & * + - ~ !
+<unary-op> -> OP_AND
+<unary-op> -> OP_MUL
+<unary-op> -> OP_ADD
+<unary-op> -> OP_SUB
+<unary-op> -> OP_NOT
+<unary-op> -> OP_LNOT
+
+// (6.5.2)
+// argument-expression-list:
+//      assignment-expression
+//      argument-expression-list , assignment-expression
+<arg-expr-list> -> <asn-expr>
+<arg-expr-list> -> <arg-expr-list> DELIM_COMMA <asn-expr>
+
+// (6.5.2)
+// postfix-expression:
+//      primary-expression
+//      postfix-expression [ expression ]
+//      postfix-expression ( argument-expression-list_opt )
+//      postfix-expression . identifier
+//      postfix-expression -> identifier
+//      postfix-expression ++
+//      postfix-expression --
+//      ( type-name ) { initializer-list }
+//      ( type-name ) { initializer-list , }
+<postfix-expr> -> <prim-expr>
+<postfix-expr> -> <postfix-expr> DELIM_LSQBRACKET <expr> DELIM_RSQBRACKET
+<postfix-expr> -> <postfix-expr> DELIM_LPAR <arg-expr-list> DELIM_RPAR
+<postfix-expr> -> <postfix-expr> DELIM_LPAR DELIM_RPAR
+<postfix-expr> -> <postfix-expr> OP_DOT IDENTIFIER
+<postfix-expr> -> <postfix-expr> OP_ARROW IDENTIFIER
+<postfix-expr> -> <postfix-expr> OP_INC
+<postfix-expr> -> <postfix-expr> OP_DEC
+<postfix-expr> -> DELIM_LPAR <type-name> DELIM_RPAR DELIM_LCURBRACE <initializer-list> DELIM_RCURBRACE
+<postfix-expr> -> DELIM_LPAR <type-name> DELIM_RPAR DELIM_LCURBRACE <initializer-list> DELIM_COMMA DELIM_RCURBRACE
+
+// (6.5.1.1) 不用
+
+// (6.5.1)
+// primary-expression:
+//		identifier
+//		constant
+//		string-literal
+//		( expression )
+//		generic-selection (不用)
+<prim-expr> -> IDENTIFIER
+<prim-expr> -> <constant>
+<prim-expr> -> DELIM_LPAR <expr> DELIM_RPAR
+<constant> -> <num-const>
+<constant> -> CHAR_CONST
+<constant> -> STR_LITERAL
+<num-const> -> INT_CONST
+<num-const> -> FLOAT_CONST

@@ -1,0 +1,562 @@
+// -------------------- 外部定义 --------------------
+// A.2.4 External definitions
+
+// (6.9)
+// translation-unit:
+//      external-declaration
+//      translation-unit external-declaration
+// 消除左递归
+<trans-unit> -> <external-decl> <trans-unit-tail>
+<trans-unit-tail> -> <external-decl> <trans-unit-tail>
+<trans-unit-tail> -> ""
+
+// (6.9)
+// external-declaration:
+//      function-definition
+//      declaration
+// 增加 def 关键字辅助消除冲突
+<external-decl> -> def <func-def>
+<external-decl> -> <decl>
+
+// (6.9.1)
+// function-definition:
+//      declaration-specifiers declarator declaration-list_opt compound-statement
+<func-def> -> <decl-spec> <declarator> <decl-list-opt> <comp-stmt>
+<decl-list-opt> -> <decl-list>
+<decl-list-opt> -> ""
+
+// (6.9.1)
+// declaration-list:
+//      declaration
+//      declaration-list declaration
+// 消除左递归
+<decl-list> -> <decl> <decl-list-tail>
+<decl-list-tail> -> <decl> <decl-list-tail>
+<decl-list-tail> -> ""
+
+// -------------------- 语句 --------------------
+// A.2.3 Statements
+
+// (6.8)
+// statement:
+//      labeled-statement
+//      compound-statement
+//      expression-statement
+//      selection-statement
+//      iteration-statement
+//      jump-statement
+<stmt> -> <labeled-stmt>
+<stmt> -> <comp-stmt>
+<stmt> -> <expr-stmt>
+<stmt> -> <sele-stmt>
+<stmt> -> <iter-stmt>
+<stmt> -> <jump-stmt>
+
+// (6.8.1)
+// labeled-statement:
+//      identifier : statement (有冲突，不用)
+//      case constant-expression : statement
+//      default : statement
+// 冲突
+// <labeled-stmt> -> IDENTIFIER DELIM_COLON <stmt>
+<labeled-stmt> -> case <const-expr> DELIM_COLON <stmt>
+<labeled-stmt> -> default DELIM_COLON <stmt>
+
+// (6.8.2)
+// compound-statement:
+//      { block-item-list_opt }
+<comp-stmt> -> DELIM_LCURBRACE <blkitem-list-opt> DELIM_RCURBRACE
+<blkitem-list-opt> -> <blkitem-list>
+<blkitem-list-opt> -> ""
+
+// (6.8.2)
+// block-item-list:
+//      block-item
+//      block-item-list block-item
+// 消除左递归
+<blkitem-list> -> <blkitem> <blkitem-list-tail>
+<blkitem-list-tail> -> <blkitem> <blkitem-list-tail>
+<blkitem-list-tail> -> "" 
+
+// (6.8.2)
+// block-item:
+//      declaration
+//      statement
+<blkitem> -> <decl>
+<blkitem> -> <stmt>
+
+// (6.8.3)
+// expression-statement:
+//      expression_opt ;
+<expr-stmt> -> <expr-opt> DELIM_SEMICOLON
+<expr-opt> -> <expr>
+<expr-opt> -> ""
+
+// (6.8.4)
+// selection-statement:
+//      if ( expression ) statement (为消除歧义，不允许)
+//      if ( expression ) statement else statement
+//      switch ( expression ) statement
+// 
+<sele-stmt> -> if DELIM_LPAR <expr> DELIM_RPAR <stmt> else <stmt>
+<sele-stmt> -> switch DELIM_LPAR <expr> DELIM_RPAR <stmt>
+
+// (6.8.5)
+// iteration-statement:
+//      while ( expression ) statement
+//      do statement while ( expression ) ;
+//      for ( expression_opt ; expression_opt ; expression_opt ) statement
+//      for ( declaration expression_opt ; expression_opt ) statement
+<iter-stmt> -> while DELIM_LPAR <expr> DELIM_RPAR <stmt>
+<iter-stmt> -> do <stmt> while DELIM_LPAR <expr> DELIM_RPAR DELIM_SEMICOLON
+<iter-stmt> -> for DELIM_LPAR <for-cond> DELIM_RPAR <stmt>
+<for-cond> -> <expr-opt> DELIM_SEMICOLON <expr-opt> DELIM_SEMICOLON <expr-opt>
+<for-cond> -> <decl> <expr-opt> DELIM_SEMICOLON <expr-opt>
+<expr-opt> -> <expr>
+<expr-opt> -> ""
+
+// (6.8.6)
+// jump-statement:
+//      goto identifier ; (不用)
+//      continue ;
+//      break ;
+//      return expression_opt ;
+<jump-stmt> -> continue DELIM_SEMICOLON
+<jump-stmt> -> break DELIM_SEMICOLON
+<jump-stmt> -> return <expr-opt> DELIM_SEMICOLON
+
+
+// // -------------------- 声明 --------------------
+// A.2.2 Declarations
+
+// (6.7)
+// declaration:
+//      declaration-specifiers init-declarator-list_opt ;
+//      static_assert-declaration (不用)
+// 消除左递归
+<decl> -> <decl-spec> <init-declarator-list-opt> DELIM_SEMICOLON
+<init-declarator-list-opt> -> <init-declarator-list>
+<init-declarator-list-opt> -> ""
+
+// (6.7)
+// declaration-specifiers:
+//      storage-class-specifier declaration-specifiers_opt (不用)
+//      type-specifier declaration-specifiers_opt
+//      type-qualifier declaration-specifiers_opt (不用)
+//      function-specifier declaration-specifiers_opt (不用)
+//      alignment-specifier declaration-specifiers_opt (不用)
+<decl-spec> -> <type-spec> <decl-spec-opt>
+// 此句冲突
+// <decl-spec-opt> -> <decl-spec>
+<decl-spec-opt> -> ""
+
+// (6.7)
+// init-declarator-list:
+//      init-declarator
+//      init-declarator-list , init-declarator
+// 消除左递归
+<init-declarator-list> -> <init-declarator> <init-declarator-list-tail>
+<init-declarator-list-tail> -> DELIM_COMMA <init-declarator> <init-declarator-list-tail>
+<init-declarator-list-tail> -> ""
+
+// (6.7)
+// init-declarator:
+//      declarator
+//      declarator = initializer
+<init-declarator> -> <declarator> <init-declarator-tail-opt>
+<init-declarator-tail-opt> -> OP_ASN <initializer>
+<init-declarator-tail-opt> -> ""
+
+// (6.7.1) (不用)
+
+// (6.7.2)
+// type-specifier:
+//      void
+//      char
+//      short
+//      int
+//      long
+//      float
+//      double
+//      signed
+//      unsigned
+//      _Bool (不用)
+//      _Complex (不用)
+//      atomic-type-specifier (不用)
+//      struct-or-union-specifier (不用)
+//      enum-specifier (不用)
+//      typedef-name (不用)
+<type-spec> -> void
+<type-spec> -> char
+<type-spec> -> short
+<type-spec> -> int
+<type-spec> -> long
+<type-spec> -> float
+<type-spec> -> double
+<type-spec> -> signed
+<type-spec> -> unsigned
+
+// (6.7.2.1) - (6.7.5) (不用)
+
+// (6.7.6)
+// declarator:
+//      pointer_opt direct-declarator
+<declarator> -> <pointer-opt> <direct-declarator>
+<pointer-opt> -> <pointer>
+<pointer-opt> -> ""
+
+// (6.7.6)
+// direct-declarator:
+//      identifier
+//      ( declarator )
+//      direct-declarator [ type-qualifier-list_opt assignment-expression_opt ]
+//      direct-declarator [ static type-qualifier-list_opt assignment-expression ] (不用)
+//      direct-declarator [ type-qualifier-list static assignment-expression ] (不用)
+//      direct-declarator [ type-qualifier-list_opt * ] (不用)
+//      direct-declarator ( parameter-type-list )
+//      direct-declarator ( identifier-list_opt )
+// 消除左递归
+<direct-declarator> -> IDENTIFIER <direct-declarator-tail>
+<direct-declarator> -> DELIM_LPAR <declarator> DELIM_RPAR <direct-declarator-tail>
+<direct-declarator-tail> -> DELIM_LSQBRACKET <type-qual-list-opt> <asn-expr-opt> DELIM_RSQBRACKET <direct-declarator-tail>
+<direct-declarator-tail> -> DELIM_LPAR <direct-declarator-in-par> DELIM_RPAR <direct-declarator-tail>
+<direct-declarator-tail> -> ""
+<asn-expr-opt> -> <asn-expr>
+<asn-expr-opt> -> ""
+<direct-declarator-in-par> -> <param-type-list>
+<direct-declarator-in-par> -> <identifier-list-opt>
+<identifier-list-opt> -> <identifier-list>
+<identifier-list-opt> -> ""
+
+// (6.7.6)
+// pointer:
+//      * type-qualifier-list_opt
+//      * type-qualifier-list_opt pointer
+// 提取公共左因子
+<pointer> -> OP_MUL <type-qual-list-opt> <pointer-opt>
+// type-qualifier 不用
+// <type-qual-list-opt> -> <type-qual-list>
+<type-qual-list-opt> -> ""
+
+// (6.7.6)
+// type-qualifier-list: (不用)
+//      type-qualifier
+//      type-qualifier-list type-qualifier
+// <type-qual-list> -> <type-qual> <type-qual-list-tail>
+// <type-qual-list-tail> -> <type-qual> <type-qual-list-tail>
+// <type-qual-list-tail> -> ""
+
+// (6.7.6)
+// parameter-type-list:
+//      parameter-list
+//      parameter-list , ... (不用)
+<param-type-list> -> <param-list>
+
+// (6.7.6)
+// parameter-list:
+//      parameter-declaration
+//      parameter-list , parameter-declaration
+// 消除左递归
+<param-list> -> <param-decl> <param-list-tail>
+<param-list-tail> -> DELIM_COMMA <param-decl> <param-list-tail>
+<param-list-tail> -> ""
+
+// (6.7.6)
+// parameter-declaration:
+//      declaration-specifiers declarator
+//      declaration-specifiers abstract-declarator_opt (不用)
+<param-decl> -> <decl-spec> <param-decl-tail>
+<param-decl-tail> -> <declarator>
+
+// (6.7.6)
+// identifier-list:
+//      identifier
+//      identifier-list , identifier
+<identifier-list> -> IDENTIFIER <identifier-list-tail>
+<identifier-list-tail> -> DELIM_COMMA IDENTIFIER <identifier-list-tail>
+<identifier-list-tail> -> ""
+
+// (6.7.7) - (6.7.8) (不用)
+
+// (6.7.9)
+// initializer:
+//      assignment-expression
+//      { initializer-list }
+//      { initializer-list , } (不用)
+<initializer> -> <asn-expr>
+<initializer> -> DELIM_LCURBRACE <initializer-list> DELIM_RCURBRACE
+
+// (6.7.9)
+// initializer-list
+//      designation_opt initializer
+//      initializer-list , designation_opt initializer
+// 消除左递归
+<initializer-list> -> <designation-opt> <initializer> <initializer-list-tail>
+<initializer-list-tail> -> DELIM_COMMA <designation-opt> <initializer> <initializer-list-tail>
+<initializer-list-tail> -> ""
+<designation-opt> -> <designation>
+<designation-opt> -> "" 
+
+// (6.7.9)
+// designation:
+//      designator-list =
+<designation> -> <designator-list> OP_ASN 
+
+// (6.7.9)
+// designator-list:
+//      designator
+//      designator-list designator
+// 消除左递归
+<designator-list> -> <designator> <designator-list-tail>
+<designator-list-tail> -> <designator> <designator-list-tail>
+<designator-list-tail> -> "" 
+
+// (6.7.9)
+// designator:
+//      [ constant-expression ]
+//      . identifier
+<designator> -> DELIM_LSQBRACKET <const-expr> DELIM_RSQBRACKET
+<designator> -> OP_DOT IDENTIFIER
+
+
+// -------------------- 表达式 --------------------
+// A.2.1 Expressions
+// (6.5.17)
+// expression:
+//		assignment-expression
+//		expression , assignment-expression
+// 消除左递归
+<expr> -> <asn-expr> <expr-tail>
+<expr-tail> -> DELIM_COMMA <asn-expr> <expr-tail>
+<expr-tail> -> ""
+
+// (6.5.16)
+// assignment-expression:
+//		conditional-expression
+//		unary-expression assignment-operator assignment-expression
+<asn-expr> -> <cond-expr>
+// 增加 assign 关键字辅助消除冲突
+<asn-expr> -> assign <unary-expr> <asn-op> <asn-expr>
+
+// (6.5.16)
+// assignment-operator:
+//      = *= /= %= += -= <<= >>= &= ^= |=
+<asn-op> -> OP_ASN
+<asn-op> -> OP_MULASN
+<asn-op> -> OP_DIVASN
+<asn-op> -> OP_MODASN
+<asn-op> -> OP_ADDASN
+<asn-op> -> OP_SUBASN
+<asn-op> -> OP_SHLASN
+<asn-op> -> OP_SHRASN
+<asn-op> -> OP_ANDASN
+<asn-op> -> OP_XORASN
+<asn-op> -> OP_ORASN
+
+// (6.6)
+// constant-expression:
+//      conditional-expression
+<const-expr> -> <cond-expr>
+
+// (6.5.15)
+// conditional-expression:
+//		logical-OR-expression
+//		logical-OR-expression ? expression : conditional-expression
+// 提取公共左因子
+<cond-expr> -> <lor-expr> <cond-expr-tail>
+<cond-expr-tail> -> DELIM_QUESTION <expr> DELIM_COLON <cond-expr>
+<cond-expr-tail> -> ""
+
+// (6.5.14)
+// logical-OR-expression:
+//		logical-AND-expression
+//		logical-OR-expression || logical-AND-expression
+// 消除左递归
+<lor-expr> -> <land-expr> <lor-expr-tail>
+<lor-expr-tail> -> OP_LOR <land-expr> <lor-expr-tail>
+<lor-expr-tail> -> ""
+
+// (6.5.13)
+// logical-AND-expression:
+//		inclusive-OR-expression
+//		logical-AND-expression && inclusive-OR-expression
+// 消除左递归
+<land-expr> -> <inc-or-expr> <land-expr-tail>
+<land-expr-tail> -> OP_LAND <inc-or-expr> <land-expr-tail>
+<land-expr-tail> -> ""
+
+// (6.5.12)
+// inclusive-OR-expression:
+//		exclusive-OR-expression
+//		inclusive-OR-expression | exclusive-OR-expression
+// 消除左递归
+<inc-or-expr> -> <exc-or-expr> <inc-or-expr-tail>
+<inc-or-expr-tail> -> OP_OR <exc-or-expr> <inc-or-expr-tail>
+<inc-or-expr-tail> -> ""
+// (6.5.11)
+// exclusive-OR-expression:
+//		AND-expression
+//		exclusive-OR-expression ^ AND-expression
+// 消除左递归
+<exc-or-expr> -> <and-expr> <exc-or-expr-tail>
+<exc-or-expr-tail> -> OP_XOR <and-expr> <exc-or-expr-tail>
+<exc-or-expr-tail> -> ""
+
+// (6.5.10)
+// AND-expression:
+//		equality-expression
+//		AND-expression & equality-expression
+// 消除左递归
+<and-expr> -> <eq-expr> <and-expr-tail>
+<and-expr-tail> -> OP_AND <eq-expr> <and-expr-tail>
+<and-expr-tail> -> ""
+
+// (6.5.9)
+// equality-expression:
+//		relational-expression
+//		equality-expression == relational-expression
+//		equality-expression != relational-expression
+// 消除左递归
+<eq-expr> -> <rel-expr> <eq-expr-tail>
+<eq-expr-tail> -> OP_EQ <rel-expr> <eq-expr-tail>
+<eq-expr-tail> -> OP_NEQ <rel-expr> <eq-expr-tail>
+<eq-expr-tail> -> ""
+
+// (6.5.8)
+// relational-expression:
+//		shift-expression
+//		relational-expression < shift-expression
+//		relational-expression > shift-expression
+//		relational-expression <= shift-expression
+//		relational-expression >= shift-expression
+// 消除左递归
+<rel-expr> -> <shift-expr> <rel-expr-tail>
+<rel-expr-tail> -> OP_LT <shift-expr> <rel-expr-tail>
+<rel-expr-tail> -> OP_GT <shift-expr> <rel-expr-tail>
+<rel-expr-tail> -> OP_LE <shift-expr> <rel-expr-tail>
+<rel-expr-tail> -> OP_GE <shift-expr> <rel-expr-tail>
+<rel-expr-tail> -> ""
+
+// (6.5.7)
+// shift-expression:
+//		additive-expression
+//		shift-expression << additive-expression
+//		shift-expression >> additive-expression
+// 消除左递归
+<shift-expr> -> <additive-expr> <shift-expr-tail>
+<shift-expr-tail> -> OP_SHL <additive-expr> <shift-expr-tail>
+<shift-expr-tail> -> OP_SHR <additive-expr> <shift-expr-tail>
+<shift-expr-tail> -> ""
+
+// (6.5.6)
+// additive-expression:
+//		multiplicative-expression
+//		additive-expression + multiplicative-expression
+//		additive-expression - multiplicative-expression
+// 消除左递归
+<additive-expr> -> <multiplicative-expr> <additive-expr-tail>
+<additive-expr-tail> -> OP_ADD <multiplicative-expr> <additive-expr-tail>
+<additive-expr-tail> -> OP_SUB <multiplicative-expr> <additive-expr-tail>
+<additive-expr-tail> -> ""
+
+// (6.5.5)
+// multiplicative-expression:
+//		cast-expression
+//		multiplicative-expression * cast-expression
+//		multiplicative-expression / cast-expression
+//		multiplicative-expression % cast-expression
+// 消除左递归
+<multiplicative-expr> -> <cast-expr> <multiplicative-expr-tail>
+<multiplicative-expr-tail> -> OP_MUL <cast-expr> <multiplicative-expr-tail>
+<multiplicative-expr-tail> -> OP_DIV <cast-expr> <multiplicative-expr-tail>
+<multiplicative-expr-tail> -> OP_MOD <cast-expr> <multiplicative-expr-tail>
+<multiplicative-expr-tail> -> ""
+
+// (6.5.4)
+// cast-expression:
+//      unary-expression
+//      ( type-name ) cast-expression (冲突，不用)
+<cast-expr> -> <unary-expr>
+// 此句冲突
+// <cast-expr> -> DELIM_LPAR <type-name> DELIM_RPAR <cast-expr>
+
+// (6.5.3)
+// unary-expression:
+//		postfix-expression
+//		++ unary-expression
+//		-- unary-expression
+//		unary-operator cast-expression
+//		sizeof unary-expression (不用)
+//		sizeof ( type-name ) (不用)
+//      _Alignof ( type-name ) (不用)
+<unary-expr> -> <postfix-expr>
+<unary-expr> -> OP_INC <unary-expr>
+<unary-expr> -> OP_DEC <unary-expr>
+<unary-expr> -> <unary-op> <cast-expr>
+// 提取公共左因子
+// 略微修改，sizeof ( unary-expression | type-name ) 以消除冲突
+// <unary-expr> -> sizeof DELIM_LPAR <sizeof-tail> DELIM_RPAR
+// <sizeof-tail> -> <unary-expr>
+// <sizeof-tail> -> <type-name>
+
+// (6.5.3) 
+// unary-operator:
+//      & * + - ~ !
+<unary-op> -> OP_AND
+<unary-op> -> OP_MUL
+<unary-op> -> OP_ADD
+<unary-op> -> OP_SUB
+<unary-op> -> OP_NOT
+<unary-op> -> OP_LNOT
+
+// (6.5.2)
+// argument-expression-list:
+//      assignment-expression
+//      argument-expression-list , assignment-expression
+<arg-expr-list> -> <asn-expr> <arg-expr-list-tail>
+<arg-expr-list-tail> -> DELIM_COMMA <asn-expr> <arg-expr-list-tail>
+<arg-expr-list-tail> -> ""
+
+// (6.5.2)
+// postfix-expression:
+//      primary-expression
+//      postfix-expression [ expression ]
+//      postfix-expression ( argument-expression_opt )
+//      postfix-expression . identifier
+//      postfix-expression -> identifier
+//      postfix-expression ++
+//      postfix-expression --
+//      ( type-name ) { initializer-list } (冲突，不用)
+//      ( type-name ) { initializer-list , } (不用)
+// 消除左递归
+<postfix-expr> -> <prim-expr> <postfix-expr-tail>
+// 此句冲突
+// <postfix-expr> -> DELIM_LPAR <type-name> DELIM_RPAR DELIM_LCURBRACE <initializer-list> DELIM_RCURBRACE <postfix-expr-tail>
+<postfix-expr-tail> -> DELIM_LSQBRACKET <expr> DELIM_RSQBRACKET <postfix-expr-tail>
+<postfix-expr-tail> -> DELIM_LPAR <arg-expr-list-opt> DELIM_RPAR <postfix-expr-tail>
+<postfix-expr-tail> -> OP_DOT IDENTIFIER <postfix-expr-tail>
+<postfix-expr-tail> -> OP_ARROW IDENTIFIER <postfix-expr-tail>
+<postfix-expr-tail> -> OP_INC <postfix-expr-tail>
+<postfix-expr-tail> -> OP_DEC <postfix-expr-tail>
+<postfix-expr-tail> -> ""
+<arg-expr-list-opt> -> <arg-expr-list>
+<arg-expr-list-opt> -> ""
+
+// (6.5.1.1) 不用
+
+// (6.5.1)
+// primary-expression:
+//		identifier
+//		constant
+//		string-literal
+//		( expression )
+//		generic-selection (不用)
+<prim-expr> -> IDENTIFIER
+<prim-expr> -> <constant>
+<prim-expr> -> DELIM_LPAR <expr> DELIM_RPAR
+<constant> -> <num-const>
+<constant> -> CHAR_CONST
+<constant> -> STR_LITERAL
+<num-const> -> INT_CONST
+<num-const> -> FLOAT_CONST
+// ...

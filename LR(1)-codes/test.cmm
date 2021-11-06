@@ -1,0 +1,50 @@
+int I = 3;
+
+typedef struct _Pair
+{
+	int x;
+	int y;
+} Pair;
+
+enum Gender {MALE, FEMALE};
+
+int f(const int x, const char a)
+{
+	return x + a;
+}
+
+int main(int argc, char * argv[])
+{
+	float b = 3.5;
+	char a = 'a';
+	a += (3);
+	// int i = 0;
+	for(int i = 2; i < (2+true) / a; i += 1)
+	{
+		b++;
+	}
+	while(true)
+	{
+		a==2;
+		3+5.2 != 3;
+	}
+	s.id;
+	s->pid;
+
+	int y = f(2, 1);
+
+	x = (3 < 2);
+
+	if(z == 1)
+	{
+		--y;
+	}
+	// 注意，此处不再有歧义
+	else if(j >= 2)
+	{
+		y += 2;
+		y = t = t + 1; 
+	}
+
+	z = 3 > 2 ? 1 : f(x, a);
+}
